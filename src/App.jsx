@@ -18,7 +18,7 @@ import {
 const examples = ["hello@gmail.com", "name@company.com"];
 
 function getVerdict(result) {
-  if (!result.formatValid || result.mxFound === false || result.smtpValid === false) {
+  if (!result.formatValid || result.deliverability === "undeliverable") {
     return {
       label: "Likely invalid",
       description: "This address may not be able to receive email.",
@@ -27,7 +27,7 @@ function getVerdict(result) {
     };
   }
 
-  if (result.mxFound !== true || result.smtpValid !== true) {
+  if (result.deliverability !== "deliverable") {
     return {
       label: "Could not confirm",
       description: "Some mail providers limit mailbox checks. The address may still work.",
