@@ -125,11 +125,24 @@ function App() {
                 required
                 aria-describedby={error ? "form-error" : undefined}
               />
-              <button type="submit" disabled={loading || !email.trim()}>
+              {email && (
+                <button
+                  className="clear-input"
+                  type="button"
+                  onClick={() => chooseExample("")}
+                  aria-label="Clear email address"
+                  title="Clear address"
+                >
+                  <X size={15} />
+                </button>
+              )}
+              <button className="submit-button" type="submit" disabled={loading || !email.trim()}>
                 {loading ? <><LoaderCircle className="spin" size={17} /> Checking</> : <>Check email <ArrowUpRight size={17} /></>}
               </button>
             </div>
-            {error ? <p className="form-message error-message" id="form-error">{error}</p> : (
+            {error ? <p className="form-message error-message" id="form-error" role="alert">{error}</p> : loading ? (
+              <p className="form-message loading-message" role="status"><LoaderCircle className="spin" size={14} /> Checking format, domain, and mailbox signals…</p>
+            ) : (
               <p className="form-message"><ShieldCheck size={14} /> Your address is checked securely and never stored.</p>
             )}
 
@@ -137,15 +150,34 @@ function App() {
               <div className={`result-card ${verdict.tone}`} aria-live="polite">
                 <div className="result-heading">
                   <span className="result-icon"><VerdictIcon size={21} /></span>
-                  <div>
+                  <div className="result-copy">
                     <strong>{verdict.label}</strong>
                     <p>{verdict.description}</p>
                   </div>
+                  <span className="result-domain">{result.domain}</span>
                 </div>
+                {typeof result.qualityScore === "number" && (
+                  <div className="quality-score">
+                    <div className="quality-label">
+                      <span>Email quality score</span>
+                      <strong>{Math.round(result.qualityScore * 100)}<small>/100</small></strong>
+                    </div>
+                    <div
+                      className="quality-track"
+                      role="progressbar"
+                      aria-label="Email quality score"
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-valuenow={Math.round(result.qualityScore * 100)}
+                    >
+                      <span style={{ width: `${Math.round(result.qualityScore * 100)}%` }} />
+                    </div>
+                  </div>
+                )}
                 <div className="result-details">
                   <ResultRow label="Email format" passed={result.formatValid} />
-                  <ResultRow label="Domain can receive mail" passed={result.mxFound} />
-                  <ResultRow label="Mailbox check" passed={result.smtpValid} />
+                  <ResultRow label="Mail server (MX)" passed={result.mxFound} />
+                  <ResultRow label="Mailbox signal" passed={result.smtpValid} />
                   <ResultRow label="Disposable address" passed={result.disposable} inverse />
                 </div>
                 {result.disposable && <p className="result-note">This looks like a temporary email provider.</p>}
@@ -176,7 +208,14 @@ function App() {
             <article><span className="step-number">02</span><h3>Domain</h3><p>Does its domain have mail servers configured?</p></article>
             <article><span className="step-number">03</span><h3>Mailbox</h3><p>Does the provider indicate the mailbox is reachable?</p></article>
           </div>
-          <div className="disclaimer"><CircleHelp size={17} /><p>Email checks are best-effort signals, not a guarantee. Mail providers can limit mailbox checks, and only sending a confirmation email can prove an address is controlled by its owner.</p><ChevronDown size={16} className="disclaimer-chevron" /></div>
+          <details className="disclaimer">
+            <summary>
+              <CircleHelp size={17} />
+              <span>How reliable is this check?</span>
+              <ChevronDown size={16} className="disclaimer-chevron" />
+            </summary>
+            <p>Email checks are best-effort signals, not a guarantee. Mail providers can limit mailbox checks, and only sending a confirmation email can prove an address is controlled by its owner.</p>
+          </details>
         </section>
       </main>
 

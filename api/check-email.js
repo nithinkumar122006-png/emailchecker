@@ -54,6 +54,9 @@ export default async function handler(request, response) {
       freeProvider: typeof data.email_quality?.is_free_email === "boolean"
         ? data.email_quality.is_free_email
         : null,
+      qualityScore: typeof data.email_quality?.score === "number"
+        ? data.email_quality.score
+        : null,
       domain: data.email_domain?.domain ?? email.split("@")[1] ?? "",
     });
   } catch (error) {
